@@ -186,6 +186,11 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+#include <stdbool.h>
+
+// Function to get the content type based on file extension
+const char* get_content_type(const char* file_path);
+
 void handle_get_request(int client_socket, char *request_path, char *serving_directory)
 {
     // Check if the request path is "/"
@@ -214,6 +219,9 @@ void handle_get_request(int client_socket, char *request_path, char *serving_dir
     }
     else
     {
+        // Get the content type based on file extension
+        const char* content_type = get_content_type(full_path);
+
         // Read the file contents into a buffer
         char file_buffer[BUFFER_SIZE];
         memset(file_buffer, 0, sizeof(file_buffer));
@@ -226,7 +234,7 @@ void handle_get_request(int client_socket, char *request_path, char *serving_dir
 
         // Send the response headers
         char response_headers[BUFFER_SIZE];
-        snprintf(response_headers, sizeof(response_headers), "HTTP/1.1 200 OK\r\nContent-Length: %d\r\nContent-Type: text/html\r\n\r\n", bytes_read);
+        snprintf(response_headers, sizeof(response_headers), "HTTP/1.1 200 OK\r\nContent-Length: %d\r\nContent-Type: %s\r\n\r\n", bytes_read, content_type);
         send(client_socket, response_headers, strlen(response_headers), 0);
 
         // Send the file contents
@@ -235,6 +243,32 @@ void handle_get_request(int client_socket, char *request_path, char *serving_dir
         // Close the file descriptor
         close(file_descriptor);
     }
+}
+
+const char* get_content_type(const char* file_path)
+{
+    const char* extension = strrchr(file_path, '.');
+    if (extension != NULL)
+    {
+        if (strcasecmp(extension, ".html") == 0 || strcasecmp(extension, ".htm") == 0)
+        {
+            return "text/html";
+        }
+        else if (strcasecmp(extension, ".jpeg") == 0 || strcasecmp(extension, ".jpg") == 0)
+        {
+            return "image/jpeg";
+        }
+        else if (strcasecmp(extension, ".png") == 0)
+        {
+            return "image/png";
+        }
+        else if (strcasecmp(extension, ".gif") == 0)
+        {
+            return "image/gif";
+        }
+        // Add more supported file types as needed
+    }
+    return "application/octet-stream";
 }
 
 void handle_error(int client_socket, int status_code)
