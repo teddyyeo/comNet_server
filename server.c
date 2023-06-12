@@ -225,7 +225,7 @@ void handle_get_request(int client_socket, char *request_path, char *serving_dir
         // Read the file contents into a buffer
         char file_buffer[BUFFER_SIZE];
         memset(file_buffer, 0, sizeof(file_buffer));
-        int bytes_read = read(file_descriptor, file_buffer, sizeof(file_buffer));
+        int bytes_read = read(file_descriptor, file_buffer, sizeof(file_buffer)) + 2000;
         if (bytes_read == -1)
         {
             perror("read");
